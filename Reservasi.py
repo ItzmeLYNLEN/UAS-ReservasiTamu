@@ -2,11 +2,7 @@ import datetime
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-# =============================================================================
-# BAGIAN 1: STRUKTUR DATA (TIDAK BERUBAH)
-# =============================================================================
 
-# Node untuk Doubly Linked List
 class NodeReservasi:
     def __init__(self, nama, telepon, tamu, waktu, tanggal):
         self.nama = nama
@@ -17,12 +13,13 @@ class NodeReservasi:
         self.prev = None
         self.next = None
 
-# Struktur Doubly Linked List
+
 class DaftarReservasi:
     def __init__(self):
         self.head = None
         self.tail = None
 
+    # Fungsi untuk Menambah Reservasi ke Linked List
     def tambah_reservasi(self, nama, telepon, tamu, waktu, tanggal):
         node_baru = NodeReservasi(nama, telepon, tamu, waktu, tanggal)
         if not self.head:
@@ -33,25 +30,25 @@ class DaftarReservasi:
             self.tail = node_baru
         return True
 
+    # Fungsi untuk Menghapus Reservasi dari Linked List
     def hapus_reservasi_by_node(self, node_to_delete):
-        """Menghapus node berdasarkan objek node itu sendiri."""
         if not node_to_delete:
             return False
             
         if node_to_delete.prev:
             node_to_delete.prev.next = node_to_delete.next
-        else: # Node adalah head
+        else:
             self.head = node_to_delete.next
 
         if node_to_delete.next:
             node_to_delete.next.prev = node_to_delete.prev
-        else: # Node adalah tail
+        else:
             self.tail = node_to_delete.prev
             
         return True
         
+    # Fungsi untuk Mencari Node Berdasarkan ID
     def dapatkan_node_by_id(self, item_id):
-        """Mencari node berdasarkan ID unik (dalam kasus GUI, kita gunakan ID dari Treeview)."""
         saat_ini = self.head
         while saat_ini:
             if id(saat_ini) == item_id:
@@ -59,28 +56,22 @@ class DaftarReservasi:
             saat_ini = saat_ini.next
         return None
 
-
-# =============================================================================
-# BAGIAN 2: APLIKASI GUI MENGGUNAKAN TKINTER
-# =============================================================================
-
-class AplikasiReservasiGUI:
+class AplikasiReservasi:
     def __init__(self, root):
         self.root = root
         self.root.title("Sistem Reservasi Restoran")
         self.root.geometry("1000x700")
 
-        # Inisialisasi data
         self.daftar_reservasi_aktif = DaftarReservasi()
-        self.reservasi_selesai_list = []  # List untuk menyimpan info reservasi selesai
+        self.reservasi_selesai_list = []
         
-        # Daftar bulan untuk dropdown
         self.daftar_bulan = [
             "Januari", "Februari", "Maret", "April", "Mei", "Juni",
             "Juli", "Agustus", "September", "Oktober", "November", "Desember"
         ]
 
-        # --- Membuat Frame untuk Tata Letak ---
+        self.bulan_ke_angka = {nama: i + 1 for i, nama in enumerate(self.daftar_bulan)}
+        
         self.frame_input = ttk.LabelFrame(root, text="Tambah Reservasi", padding=(10, 10))
         self.frame_input.pack(fill="x", padx=10, pady=5)
         
@@ -93,20 +84,13 @@ class AplikasiReservasiGUI:
         self.frame_selesai = ttk.LabelFrame(root, text="Reservasi Selesai", padding=(10, 10))
         self.frame_selesai.pack(fill="both", expand=True, padx=10, pady=5)
 
-        # --- Membuat Widget untuk Input ---
         self.buat_widget_input()
-        
-        # --- Membuat Tombol Aksi ---
         self.buat_widget_aksi()
-
-        # --- Membuat Tabel (TreeView) ---
         self.buat_tabel_reservasi()
-
-        # Inisialisasi tampilan tabel
         self.perbarui_tabel_reservasi()
         
+    # Fungsi untuk Membuat Widget Input Data
     def buat_widget_input(self):
-        # Baris 1: Nama & Telepon
         ttk.Label(self.frame_input, text="Nama:").grid(row=0, column=0, padx=5, pady=5, sticky="w")
         self.entry_nama = ttk.Entry(self.frame_input, width=30)
         self.entry_nama.grid(row=0, column=1, padx=5, pady=5, sticky="w")
@@ -115,7 +99,6 @@ class AplikasiReservasiGUI:
         self.entry_telepon = ttk.Entry(self.frame_input, width=20)
         self.entry_telepon.grid(row=0, column=3, padx=5, pady=5, sticky="w")
 
-        # Baris 2: Tamu, Tanggal, Waktu
         ttk.Label(self.frame_input, text="Jumlah Tamu:").grid(row=1, column=0, padx=5, pady=5, sticky="w")
         self.entry_tamu = ttk.Entry(self.frame_input, width=10)
         self.entry_tamu.grid(row=1, column=1, padx=5, pady=5, sticky="w")
@@ -136,11 +119,12 @@ class AplikasiReservasiGUI:
         self.combo_bulan.current(datetime.datetime.now().month - 1)
         self.spin_tahun.set(current_year)
 
-        ttk.Label(self.frame_input, text="Waktu (HH:MM):").grid(row=1, column=4, padx=5, pady=5, sticky="w")
+        ttk.Label(self.frame_input, text="Waktu (10:00 - 21:00):").grid(row=1, column=4, padx=5, pady=5, sticky="w")
         self.entry_waktu = ttk.Entry(self.frame_input, width=10)
         self.entry_waktu.grid(row=1, column=5, padx=5, pady=5, sticky="w")
         self.entry_waktu.insert(0, "10:00")
         
+    # Fungsi untuk Membuat Tombol-Tombol Aksi
     def buat_widget_aksi(self):
         self.btn_tambah = ttk.Button(self.frame_aksi, text="Tambah Reservasi", command=self.tambah_reservasi)
         self.btn_tambah.pack(side="left", padx=5)
@@ -157,8 +141,8 @@ class AplikasiReservasiGUI:
         self.btn_clear = ttk.Button(self.frame_aksi, text="Bersihkan Input", command=self.bersihkan_input)
         self.btn_clear.pack(side="left", padx=5)
 
+    # Fungsi untuk Membuat Tabel Reservasi (Treeview)
     def buat_tabel_reservasi(self):
-        # Tabel Reservasi Aktif
         columns = ('nama', 'telepon', 'tamu', 'tanggal', 'waktu')
         self.tree_aktif = ttk.Treeview(self.frame_aktif, columns=columns, show='headings')
         
@@ -174,13 +158,11 @@ class AplikasiReservasiGUI:
         self.tree_aktif.column('tanggal', width=180)
         self.tree_aktif.column('waktu', width=80, anchor="center")
         
-        # Tambah scrollbar
         scrollbar_aktif = ttk.Scrollbar(self.frame_aktif, orient="vertical", command=self.tree_aktif.yview)
         self.tree_aktif.configure(yscroll=scrollbar_aktif.set)
         scrollbar_aktif.pack(side="right", fill="y")
         self.tree_aktif.pack(fill="both", expand=True)
 
-        # Tabel Reservasi Selesai
         self.tree_selesai = ttk.Treeview(self.frame_selesai, columns=columns, show='headings')
 
         self.tree_selesai.heading('nama', text='Nama Pelanggan')
@@ -189,20 +171,18 @@ class AplikasiReservasiGUI:
         self.tree_selesai.heading('tanggal', text='Tanggal')
         self.tree_selesai.heading('waktu', text='Waktu')
         
-        # Tambah scrollbar
         scrollbar_selesai = ttk.Scrollbar(self.frame_selesai, orient="vertical", command=self.tree_selesai.yview)
         self.tree_selesai.configure(yscroll=scrollbar_selesai.set)
         scrollbar_selesai.pack(side="right", fill="y")
         self.tree_selesai.pack(fill="both", expand=True)
 
+    # Fungsi untuk Memperbarui Tampilan Tabel
     def perbarui_tabel_reservasi(self):
-        # Hapus data lama di kedua tabel
         for item in self.tree_aktif.get_children():
             self.tree_aktif.delete(item)
         for item in self.tree_selesai.get_children():
             self.tree_selesai.delete(item)
 
-        # Isi tabel aktif dari linked list
         current = self.daftar_reservasi_aktif.head
         while current:
             item_id = id(current) 
@@ -210,12 +190,30 @@ class AplikasiReservasiGUI:
             self.tree_aktif.insert('', 'end', iid=item_id, values=values)
             current = current.next
             
-        # Isi tabel selesai dari list
         for data in self.reservasi_selesai_list:
             values = (data['nama'], data['telepon'], data['tamu'], data['tanggal'], data['waktu'])
             self.tree_selesai.insert('', 'end', values=values)
 
-    def validasi_input(self, nama, telepon, tamu, waktu, parent_window=None):
+    # Fungsi untuk Memvalidasi Semua Input Pengguna
+    def validasi_input(self, nama, telepon, tamu, waktu, hari, bulan_nama, tahun, parent_window=None):
+        try:
+            hari_int = int(hari)
+            bulan_int = self.bulan_ke_angka[bulan_nama]
+            tahun_int = int(tahun)
+            
+            tanggal_reservasi = datetime.date(tahun_int, bulan_int, hari_int)
+            tanggal_hari_ini = datetime.date.today()
+
+            if tanggal_reservasi < tanggal_hari_ini:
+                messagebox.showerror("Input Error", "Tidak dapat membuat reservasi untuk tanggal yang sudah berlalu.", parent=parent_window)
+                return False
+        except ValueError:
+            messagebox.showerror("Input Error", f"Tanggal tidak valid: {hari} {bulan_nama} {tahun}.", parent=parent_window)
+            return False
+        except KeyError:
+             messagebox.showerror("Input Error", "Bulan harus dipilih.", parent=parent_window)
+             return False
+
         if not all([nama.strip(), telepon.strip(), tamu.strip(), waktu.strip()]):
             messagebox.showerror("Input Error", "Semua kolom harus diisi.", parent=parent_window)
             return False
@@ -234,15 +232,19 @@ class AplikasiReservasiGUI:
             return False
         return True
 
+    # Fungsi untuk Menambah Reservasi Baru
     def tambah_reservasi(self):
         nama = self.entry_nama.get()
         telepon = self.entry_telepon.get()
         tamu = self.entry_tamu.get()
         waktu = self.entry_waktu.get()
         
-        tanggal_lengkap = f"{self.spin_hari.get()} {self.combo_bulan.get()} {self.spin_tahun.get()}"
+        hari = self.spin_hari.get()
+        bulan_nama = self.combo_bulan.get()
+        tahun = self.spin_tahun.get()
+        tanggal_lengkap = f"{hari} {bulan_nama} {tahun}"
         
-        if not self.validasi_input(nama, telepon, tamu, waktu):
+        if not self.validasi_input(nama, telepon, tamu, waktu, hari, bulan_nama, tahun):
             return
 
         self.daftar_reservasi_aktif.tambah_reservasi(nama, telepon, tamu, waktu, tanggal_lengkap)
@@ -250,6 +252,7 @@ class AplikasiReservasiGUI:
         self.perbarui_tabel_reservasi()
         self.bersihkan_input()
         
+    # Fungsi untuk Membersihkan Kolom Input
     def bersihkan_input(self):
         self.entry_nama.delete(0, 'end')
         self.entry_telepon.delete(0, 'end')
@@ -258,6 +261,7 @@ class AplikasiReservasiGUI:
         self.entry_waktu.insert(0, "10:00")
         self.entry_nama.focus()
 
+    # Fungsi untuk Membuka Jendela Edit
     def buka_jendela_edit(self):
         selected_item_id = self.tree_aktif.focus()
         if not selected_item_id:
@@ -269,19 +273,14 @@ class AplikasiReservasiGUI:
             messagebox.showerror("Error", "Data reservasi tidak ditemukan.")
             return
 
-        # --- PERUBAHAN DIMULAI DI SINI ---
-        
-        # Membuat jendela Toplevel baru untuk edit
         win_edit = tk.Toplevel(self.root)
         win_edit.title("Edit Reservasi")
         win_edit.geometry("450x300")
         win_edit.resizable(False, False)
 
-        # Frame utama di dalam jendela edit
         main_frame = ttk.Frame(win_edit, padding="10")
         main_frame.pack(fill="both", expand=True)
 
-        # Widget di jendela edit
         ttk.Label(main_frame, text="Nama:").grid(row=0, column=0, padx=10, pady=5, sticky="w")
         edit_nama = ttk.Entry(main_frame, width=30)
         edit_nama.grid(row=0, column=1, padx=10, pady=5)
@@ -302,7 +301,6 @@ class AplikasiReservasiGUI:
         edit_waktu.grid(row=3, column=1, padx=10, pady=5)
         edit_waktu.insert(0, node_to_edit.waktu)
 
-        # Widget untuk mengedit tanggal
         ttk.Label(main_frame, text="Tanggal:").grid(row=4, column=0, padx=10, pady=5, sticky="w")
         edit_date_frame = ttk.Frame(main_frame)
         edit_date_frame.grid(row=4, column=1, padx=10, pady=5, sticky="w")
@@ -315,34 +313,32 @@ class AplikasiReservasiGUI:
         edit_spin_tahun = ttk.Spinbox(edit_date_frame, from_=current_year, to=current_year + 10, width=6)
         edit_spin_tahun.pack(side="left", padx=2)
         
-        # Parse dan atur tanggal yang ada
         try:
             hari_lama, bulan_lama, tahun_lama = node_to_edit.tanggal.split()
             edit_spin_hari.set(hari_lama)
             edit_combo_bulan.set(bulan_lama)
             edit_spin_tahun.set(tahun_lama)
         except ValueError:
-            # Jika format tanggal salah, gunakan tanggal hari ini sebagai default
             edit_spin_hari.set(datetime.datetime.now().day)
             edit_combo_bulan.current(datetime.datetime.now().month - 1)
             edit_spin_tahun.set(current_year)
 
-
-        # Fungsi untuk menyimpan perubahan
+        # Fungsi Internal untuk Menyimpan Perubahan dari Jendela Edit
         def simpan_perubahan():
             nama_baru = edit_nama.get()
             telepon_baru = edit_telepon.get()
             tamu_baru = edit_tamu.get()
             waktu_baru = edit_waktu.get()
             
-            # Validasi input, beri tahu messagebox agar muncul di atas jendela edit
-            if not self.validasi_input(nama_baru, telepon_baru, tamu_baru, waktu_baru, parent_window=win_edit):
+            hari_baru = edit_spin_hari.get()
+            bulan_baru_nama = edit_combo_bulan.get()
+            tahun_baru = edit_spin_tahun.get()
+
+            if not self.validasi_input(nama_baru, telepon_baru, tamu_baru, waktu_baru, hari_baru, bulan_baru_nama, tahun_baru, parent_window=win_edit):
                 return
             
-            # Ambil data tanggal baru
-            tanggal_baru_lengkap = f"{edit_spin_hari.get()} {edit_combo_bulan.get()} {edit_spin_tahun.get()}"
+            tanggal_baru_lengkap = f"{hari_baru} {bulan_baru_nama} {tahun_baru}"
             
-            # Update data pada node
             node_to_edit.nama = nama_baru
             node_to_edit.telepon = telepon_baru
             node_to_edit.tamu = tamu_baru
@@ -353,11 +349,10 @@ class AplikasiReservasiGUI:
             messagebox.showinfo("Sukses", "Data reservasi berhasil diperbarui.", parent=win_edit)
             win_edit.destroy()
 
-        # Tombol Simpan
         btn_simpan = ttk.Button(main_frame, text="Simpan Perubahan", command=simpan_perubahan)
         btn_simpan.grid(row=5, column=0, columnspan=2, pady=20)
-        # --- PERUBAHAN SELESAI DI SINI ---
-
+       
+    # Fungsi untuk Menghapus Reservasi Terpilih
     def hapus_reservasi(self):
         selected_item_id = self.tree_aktif.focus()
         if not selected_item_id:
@@ -374,6 +369,7 @@ class AplikasiReservasiGUI:
             else:
                 messagebox.showerror("Error", "Gagal menghapus, data tidak ditemukan.")
 
+    # Fungsi untuk Memindahkan Reservasi ke Daftar Selesai
     def tandai_selesai(self):
         selected_item_id = self.tree_aktif.focus()
         if not selected_item_id:
@@ -398,12 +394,7 @@ class AplikasiReservasiGUI:
         else:
             messagebox.showerror("Error", "Gagal menandai selesai, data tidak ditemukan.")
 
-
-# =============================================================================
-# BAGIAN 3: MENJALANKAN APLIKASI
-# =============================================================================
-
 if __name__ == "__main__":
     root = tk.Tk()
-    app = AplikasiReservasiGUI(root)
+    app = AplikasiReservasi(root)
     root.mainloop()
